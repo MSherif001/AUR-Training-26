@@ -1,2 +1,8 @@
-def main() -> None:
-    print("Hello from subtask-2!")
+from PIL import Image
+
+def main():
+ image = Image.open("img.png")
+ bw_image = image.convert("L")
+ bw_image.show()
+
+main()
