@@ -32,21 +32,18 @@ class Library_item(ABC):
     @abstractmethod
     def mark_lost(self):
         self._state = ItemStatus.LOST
-    
-    @abstractmethod
+        
     @classmethod
+    @abstractmethod
     def from_dict (cls):
         ...
     
-    @abstractmethod
     def __lt__(self, other):
         return self.title < other.title
     
-    @abstractmethod
     def __str__(self):
         return f"{self.title} ({self.__class__.__name__}) - {self._state.name}"
     
-    @abstractmethod
     def __repr__(self):
         return f"<{self.__class__.__name__} title='{self.title}', status='{self._state.name}'>"
 
@@ -165,7 +162,7 @@ class Magazine(Library_item):
 
 ####### End of class declaration #######
 
-####### Data processing #######
+####### Start of data processing and library #######
 
 class Database:
     def __init__(self, filename="database.txt"):
@@ -201,6 +198,20 @@ class Database:
                 processed_data.append(new_item)
                 
         return processed_data
+    
+    def save_items(self, collection):
+        with open(self.filename, "w") as f:
+            for item in collection:
+                item_type = item.__class__.__name__
+                
+                if item_type == "Book":
+                    line = f"type=Book|title={item.title}|author={item._author}|isbn={item._isbn}|status={item.get_state().name}\n"
+                elif item_type == "DVD":
+                    line = f"type=DVD|title={item.title}|director={item._director}|status={item.get_state().name}\n"
+                elif item_type == "Magazine":
+                    line = f"type=Magazine|title={item.title}|issue={item._issue}|status={item.get_state().name}\n"
+                
+                f.write(line)
 
 
 class Library:
@@ -217,23 +228,59 @@ class Library:
                 return item
         print("Item not found")
 
-    def checkout(self, title):
-        item = self.find_by_title(title)
-        if item:
-            item.checkout()
-        else:
-            print("Item not found.")
 
     def list_available(self):
         for item in sorted(self.collection):
             if item.get_state() == ItemStatus.AVAILABLE:
                 print(item)
+    
+    def checkout(self, title):
+        item = self.find_by_title(title)
+        if item:
+            item.checkout()
+            self.db.save_items(self.collection) 
+            print(f"Checkout successful for: {title}")
+        else:
+            print("Item not found.")
+            
+    def return_item(self, title):
+        item = self.find_by_title(title)
+        if item:
+            item.return_item()
+            self.db.save_items(self.collection)
+            print(f"Return successful for: {title}")
+        else:
+            print("Item not found.")
 
-# if __name__ == "__main__":
-#     my_db = Database("database.txt")
-    
-#     alex_library = Library(my_db)
-    
-#     print("Available items in the library:")
-#     alex_library.list_available()
-####### End of processing data #######
+####### End of data processing and library #######
+
+####### Start of the program #######
+
+my_db = Database("database.txt")
+new_library = Library(my_db)
+
+####### Looping to keep the program running #######
+
+while True:
+        print("1. List available items")
+        print("2. Checkout item")
+        print("3. Return item")
+        print("4. Exit")
+        
+        choice = input("Choose an option (1-4): ").strip()
+        
+        if choice == "1":
+            print("\nAvailable Items:")
+            new_library.list_available()
+        elif choice == "2":
+            title = input("Enter the title of the item to checkout: ").strip()
+            new_library.checkout(title)
+        elif choice == "3":
+            title = input("Enter the title of the item to return: ").strip()
+            new_library.return_item(title)
+        elif choice == "4":
+            print("Exiting the system.....")
+            break
+        else:
+            print("Invalid choice, please try again.")
+########## End of the program <3 ##########
