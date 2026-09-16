@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
-img = cv2.imread('phase3/idk.png')
+img = cv2.imread('idk.png')
 img_rgb = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) 
 GREY = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
